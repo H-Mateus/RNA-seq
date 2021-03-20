@@ -1,0 +1,435 @@
+#+TITLE: EV RNA-seq
+#+PROPERTY: header-args :dir ~/RNA_seq_mairead_2021-03-16 :exports code :results verbatim drawer :tangle ev_rnaseq_2021-03-17.sh :var dir="/home/mateus/RNA_seq_mairead_2021-03-16" :exports code :shebang "#!/bin/bash" :session rnaseq
+
+* Experimental details
++ look for differentially expressed miRNAs in the different EV populations
+
+| Condition                    | number of samples |
+|------------------------------+-------------------|
+| Normoxic Cells (Nor_Cell)    |                 4 |
+| Normoxic EVs (Nor_EV)        |                 4 |
+| Hypoxic EVs (Hyp_EV)         |                 4 |
+| Normoxic/Primed EVs (N_P_EV) |                 4 |
+| FBS control (FBS_EV)         |                 1 |
+
++ Instrument used: [[https://www.illumina.com/systems/sequencing-platforms/novaseq.html][Illumina seqencer: NovaSeq]] (should check model if correct)
+
+#+begin_src bash
+  pwd
+  echo $PATH
+  # set number of cores to one less than the total
+  CORES=$(($(nproc) - 1))
+  echo ${CORES}
+#+end_src
+
+#+RESULTS:
+:results:
+bash: alias: -Qi: not found
+bash: alias: {1} | xargs -ro sudo pacman -Rns: not found
+(base) [mateus@dell-xps159570 RNA_seq_mairead_2021-03-16]$ /home/mateus/RNA_seq_mairead_2021-03-16
+/home/mateus/miniconda3/bin:/home/mateus/miniconda3/condabin:/usr/local/bin:/usr/bin:/var/lib/snapd/snap/bin:/home/mateus/.local/bin
+(base) [mateus@dell-xps159570 RNA_seq_mairead_2021-03-16]$ (base) [mateus@dell-xps159570 RNA_seq_mairead_2021-03-16]$ 11
+:end:
+
+* Software setup
+
+Here we'll use [[https://docs.conda.io/en/latest/miniconda.html][miniconda]] to manage our software
+
+#+begin_src bash :eval no
+  # First we set up an environment for the project
+  conda create -n rna_seq
+  # Then we can install the software we need
+  conda install python=3.8
+  conda install -c bioconda fastqc
+  conda install -c bioconda multiqc
+  conda install -c bioconda cutadapt
+  conda install -c bioconda trim-galore
+  conda install salmon=1.4.0
+#+end_src
+
+#+begin_src bash
+  # Then we activate the environment
+  conda activate rna_seq
+  # Then set up our channels - the last channel added is the highest priority
+  conda config --add channels defaults
+  conda config --add channels bioconda
+  conda config --add channels conda-forge
+#+end_src
+
+#+RESULTS:
+:results:
+
+(base) [mateus@dell-xps159570 trimmed_manual]$ (rna_seq) [mateus@dell-xps159570 trimmed_manual]$ (rna_seq) [mateus@dell-xps159570 trimmed_manual]$ Warning: 'defaults' already in 'channels' list, moving to the top
+Warning: 'bioconda' already in 'channels' list, moving to the top
+Warning: 'conda-forge' already in 'channels' list, moving to the top
+:end:
+
+Now let's check our conda status
+
+#+begin_src bash
+  # check conda info
+  conda info
+  # list packages
+  conda list
+#+end_src
+
+#+RESULTS:
+:results:
+
+(rna_seq) [mateus@dell-xps159570 RNA_seq_mairead_2021-03-16]$
+     active environment : rna_seq
+    active env location : /home/mateus/miniconda3/envs/rna_seq
+            shell level : 2
+       user config file : /home/mateus/.condarc
+ populated config files : /home/mateus/.condarc
+          conda version : 4.9.2
+    conda-build version : not installed
+         python version : 3.8.5.final.0
+       virtual packages : __glibc=2.33=0
+                          __unix=0=0
+                          __archspec=1=x86_64
+       base environment : /home/mateus/miniconda3  (writable)
+           channel URLs : https://conda.anaconda.org/conda-forge/linux-64
+                          https://conda.anaconda.org/conda-forge/noarch
+                          https://conda.anaconda.org/bioconda/linux-64
+                          https://conda.anaconda.org/bioconda/noarch
+                          https://repo.anaconda.com/pkgs/main/linux-64
+                          https://repo.anaconda.com/pkgs/main/noarch
+                          https://repo.anaconda.com/pkgs/r/linux-64
+                          https://repo.anaconda.com/pkgs/r/noarch
+          package cache : /home/mateus/miniconda3/pkgs
+                          /home/mateus/.conda/pkgs
+       envs directories : /home/mateus/miniconda3/envs
+                          /home/mateus/.conda/envs
+               platform : linux-64
+             user-agent : conda/4.9.2 requests/2.24.0 CPython/3.8.5 Linux/5.11.6-arch1-1 arcolinux/rolling glibc/2.33
+                UID:GID : 1000:1000
+             netrc file : None
+           offline mode : False
+(rna_seq) [mateus@dell-xps159570 RNA_seq_mairead_2021-03-16]$ # packages in environment at /home/mateus/miniconda3/envs/rna_seq:
+
+Name                    Version                   Build  Channel
+_libgcc_mutex             0.1                 conda_forge    conda-forge
+_openmp_mutex             4.5                       1_gnu    conda-forge
+fastqc                    0.11.9                        0    bioconda
+font-ttf-dejavu-sans-mono 2.37                 hab24e00_0    conda-forge
+fontconfig                2.13.1            hba837de_1004    conda-forge
+freetype                  2.10.4               h0708190_1    conda-forge
+icu                       68.1                 h58526e2_0    conda-forge
+libgcc-ng                 9.3.0               h2828fa1_18    conda-forge
+libgomp                   9.3.0               h2828fa1_18    conda-forge
+libiconv                  1.16                 h516909a_0    conda-forge
+libpng                    1.6.37               h21135ba_2    conda-forge
+libstdcxx-ng              9.3.0               h6de172a_18    conda-forge
+libuuid                   2.32.1            h7f98852_1000    conda-forge
+libxml2                   2.9.10               h72842e0_3    conda-forge
+openjdk                   10.0.2            h14c3975_1015    conda-forge
+perl                      5.32.0               h36c2ea0_0    conda-forge
+xz                        5.2.5                h516909a_1    conda-forge
+zlib                      1.2.11            h516909a_1010    conda-forge
+:end:
+
+* Raw data process
+
+** FastQC
+
+First, we should check the quality of the reads.
+Here we're using [[https://www.bioinformatics.babraham.ac.uk/projects/fastqc/][fastqc]].
+
+Move all the files into the same directory
+
+#+begin_src bash
+    # cd Raw
+  ls -l -h
+    for dir in ./Raw/*/
+    do
+        echo $dir
+        mv ${dir}*.gz ~/RNA_seq_mairead_2021-03-16/Raw
+    done
+
+  ls -l -h
+#+end_src
+
+#+RESULTS:
+:results:
+
+(rna_seq) [mateus@dell-xps159570 RNA_seq_mairead_2021-03-16]$ [4mPermissions[0m [4mSize[0m [4mUser[0m   [4mDate Modified[0m [4mName[0m
+[1;34md[33mr[31mw[32mx[0m[33mr[38;5;244m-[32mx[33mr[38;5;244m-[32mx[0m     [38;5;244m-[0m [1;33mmateus[0m [34m17 Mar 15:55[0m  [1;34mCutadapt_Sickle_out[0m
+[1;34md[33mr[31mw[32mx[0m[33mr[38;5;244m-[32mx[33mr[38;5;244m-[32mx[0m     [38;5;244m-[0m [1;33mmateus[0m [34m17 Mar 19:31[0m  [1;34mRaw[0m
+[1;34md[33mr[31mw[32mx[0m[33mr[38;5;244m-[32mx[33mr[38;5;244m-[32mx[0m     [38;5;244m-[0m [1;33mmateus[0m [34m16 Mar 15:46[0m  [1;34mTrimmed[0m
+> > > > ./Raw/fastqc_reports/
+mv: cannot stat './Raw/fastqc_reports/*.gz': No such file or directory
+./Raw/Sample_1-16081_Nor_Cells/
+./Raw/Sample_13-16143_Nor_Cells/
+./Raw/Sample_17-No_1_16081_Nor_EV/
+./Raw/Sample_18-No_2_16082_Nor_EV/
+./Raw/Sample_19-No_3_16088_Nor_EV/
+./Raw/Sample_20-No_4_16143_Nor_EV/
+./Raw/Sample_21-No_5_16081_Hyp_EV/
+./Raw/Sample_22-No_6_16082_Hyp_EV/
+./Raw/Sample_23-No_7_16088_Hyp_EV/
+./Raw/Sample_24-No_8_16143_Hyp_EV/
+./Raw/Sample_25-No_9_16081_N_P_EV/
+./Raw/Sample_26-No_10_16082_N_P_EV/
+./Raw/Sample_27-No_11_16088_N_P_EV/
+./Raw/Sample_28-No_12_16143_N_P_EV/
+./Raw/Sample_29-No_13_16082_Nor_Cells/
+./Raw/Sample_31-No_15_FBS_EV/
+./Raw/Sample_9-16088_Nor_Cells/
+(rna_seq) [mateus@dell-xps159570 RNA_seq_mairead_2021-03-16]$ [4mPermissions[0m [4mSize[0m [4mUser[0m   [4mDate Modified[0m [4mName[0m
+[1;34md[33mr[31mw[32mx[0m[33mr[38;5;244m-[32mx[33mr[38;5;244m-[32mx[0m     [38;5;244m-[0m [1;33mmateus[0m [34m17 Mar 15:55[0m  [1;34mCutadapt_Sickle_out[0m
+[1;34md[33mr[31mw[32mx[0m[33mr[38;5;244m-[32mx[33mr[38;5;244m-[32mx[0m     [38;5;244m-[0m [1;33mmateus[0m [34m17 Mar 19:31[0m  [1;34mRaw[0m
+[1;34md[33mr[31mw[32mx[0m[33mr[38;5;244m-[32mx[33mr[38;5;244m-[32mx[0m     [38;5;244m-[0m [1;33mmateus[0m [34m16 Mar 15:46[0m  [1;34mTrimmed[0m
+:end:
+
+Run fastqc
+
+#+begin_src bash
+  # generate fastqc reports
+  fastqc -o Raw/fastqc_reports Raw/*fastq.gz
+#+end_src
+
+As this generates a report for every file and manually looking through them all would be silly, we can use [[https://multiqc.info/docs/#running-multiqc][Multiqc]] to aggregate the report together.
+
+#+begin_src bash
+  # aggregate reports
+  multiqc -o Raw/fastqc_reports Raw/fastqc_reports
+#+end_src
+
+** Trimming
+
+Now we trim the reads using [[https://www.bioinformatics.babraham.ac.uk/projects/trim_galore/][=trim galore=]] which is a wrapper for [[https://cutadapt.readthedocs.io/en/stable/][Cutadapt]]
+The University of Liverpool already trimmed the data, but we'll replicate this here to demonstrate.
+They used cutadapt with =-O 3= and then [[https://github.com/najoshi/sickle/releases/tag/v1.2][Sickle]] to get a minimum pred score of 20, and remove reads less than 15 bp. in length.
+Trim galore can autodetect adapter sequences, but we specify them here, again to match Liverpool.
+
+#+begin_src bash
+  # trim reads - set overlap to 3 and length to 15 to match Liverpool settings
+  trim_galore -a " AGATCGGAAGAGCACACGTCT -a GATCGGAAGAGCACACGTCTGAACTCCAGTCAC -a AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC -a GATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT -a CTGTCTCTTATACACATCTCCGAGCCCACGAGAC -a CTGTCTCTTATACACATCTAGATGTGTATAAGAGACAG -a CGTAATAACTTCGTATAGCATACATTATACGAAGTTATACGA -a TCGTATAACTTCGTATAATGTATGCTATACGAAGTTATTACG" --stringency 3 --cores 8 --length 15 -o trimmed_manual Raw/*.fastq.gz
+#+end_src
+
+Trim Galore gives us these nice trimming reports, lests tidy them into their own directory.
+
+#+begin_src bash
+  # make directory for trimming reports
+  mkdir trimmed_manual/trimming_reports
+  # move reports
+  mv trimmed_manual/*.txt trimmed_manual/trimming_reports
+#+end_src
+
+Now we check the quality of our trimmed files so we can compare to the raw data reports.
+
+#+begin_src bash
+  # generate fastqc reports on trimmed data
+  fastqc -o trimmed_manual/fastqc_reports trimmed_manual/*.fq.gz
+  # use multiqc
+  multiqc -o trimmed_manual/fastqc_reports trimmed_manual/fastqc_reports
+#+end_src
+
+The multiqc report for the raw data can be found [[file:multiqc_reports/multiqc_report_raw.html][here]], and the trimmed data [[file:multiqc_reports/multiqc_report_trimmed.html][here]].
+
+** Alignment
+
+Now let's use [[https://salmon.readthedocs.io/en/latest/][salmon]] for aligmnent.
+We'll use transcripts rather than the genome as this is is RNA sequencing data.
+We use human transcripts from [[https://www.gencodegenes.org/][gencode]]
+
+This data is microRNA, so maybe a different source could be better for use in alignment?
+Perhaps from [[http://rfam.xfam.org/][Rfam]] or [[http://www.mirbase.org/][miRBase]]?
+
+First we index our file of human transcripts from gencode.
+
+#+begin_src bash
+  # set up salmon index - using gencode v37 transcripts
+  cd reference_genes
+  salmon index -t gencode_human.v37.transcripts.fa -i gencode_v37_index --gencode
+  cd ..
+#+end_src
+
+To do the aligmnent salmon need all the files from a sample on one line.
+We have two reads, and therefore two files, for each sample.
+
+#+begin_src bash
+  # make .txt with the sample strings
+  cd trimmed_manual
+  command ls *.fq.gz | while read file;do echo $file | cut -dR -f1 >> samples.txt; done
+#+end_src
+
+Then we quantify our reads.
+
+#+begin_src bash
+  # get a list of unique sample file strings
+  SAMPLE=$(cat samples.txt | sort | uniq)
+  echo $SAMPLE
+  # loop over sample files with salmon
+  for i in ${SAMPLE}
+  do
+      salmon quant -i ../reference_genes/gencode_v37_index -l A -o ${i} -r ${i}*
+  done
+
+  # check that we have 17 directories as we expect
+  ls -d *L001_ | wc -l
+#+end_src
+
+#+RESULTS:
+:results:
+
+(rna_seq) [mateus@dell-xps159570 trimmed_manual]$ (rna_seq) [mateus@dell-xps159570 trimmed_manual]$ 1-16081_Nor_Cells_AGTCAAAT_L001_ 13-16143_Nor_Cells_CGATGTAT_L001_ 17-No_1_16081_Nor_EV_AGTTCCAT_L001_ 18-No_2_16082_Nor_EV_TTAGGCAT_L001_ 19-No_3_16088_Nor_EV_TGACCAAT_L001_ 20-No_4_16143_Nor_EV_ACAGTGAT_L001_ 21-No_5_16081_Hyp_EV_GCCAATAT_L001_ 22-No_6_16082_Hyp_EV_ATGTCAAT_L001_ 23-No_7_16088_Hyp_EV_CAGATCAT_L001_ 24-No_8_16143_Hyp_EV_ACTTGAAT_L001_ 25-No_9_16081_N_P_EV_GATCAGAT_L001_ 26-No_10_16082_N_P_EV_TAGCTTAT_L001_ 27-No_11_16088_N_P_EV_CCGTCCAT_L001_ 28-No_12_16143_N_P_EV_GTAGAGAT_L001_ 29-No_13_16082_Nor_Cells_GTGAAAAT_L001_ 31-No_15_FBS_EV_GTCCGCAT_L001_ 9-16088_Nor_Cells_ATCACGAT_L001_
+(rna_seq) [mateus@dell-xps159570 trimmed_manual]$ > > > Version Info: This is the most recent version of salmon.
+## salmon (selective-alignment-based) v1.4.0
+## [ program ] => salmon
+## [ command ] => quant
+## [ index ] => { ../reference_genes/gencode_v37_index }
+## [ libType ] => { A }
+## [ output ] => { 1-16081_Nor_Cells_AGTCAAAT_L001_ }
+## [ unmatedReads ] => { 1-16081_Nor_Cells_AGTCAAAT_L001_R1_001_trimmed.fq.gz 1-16081_Nor_Cells_AGTCAAAT_L001_R2_001_trimmed.fq.gz }
+Logs will be written to 1-16081_Nor_Cells_AGTCAAAT_L001_/logs
+[2021-03-20 08:40:05.358] [jointLog] [info] setting maxHashResizeThreads to 12
+[2021-03-20 08:40:05.358] [jointLog] [info] Fragment incompatibility prior below threshold.  Incompatible fragments will be ignored.
+[2021-03-20 08:40:05.358] [jointLog] [info] Usage of --validateMappings implies use of minScoreFraction. Since not explicitly specified, it is being set to 0.65
+[2021-03-20 08:40:05.358] [jointLog] [info] Setting consensusSlack to selective-alignment default of 0.35.
+[2021-03-20 08:40:05.358] [jointLog] [info] parsing read library format
+[2021-03-20 08:40:05.359] [jointLog] [info] There is 1 library.
+[2021-03-20 08:40:05.408] [jointLog] [info] Loading pufferfish index
+[2021-03-20 08:40:05.408] [jointLog] [info] Loading dense pufferfish index.
+-----------------------------------------
+| Loading contig table | Time = 451.64 ms
+-----------------------------------------
+size = 1473643
+-----------------------------------------
+| Loading contig offsets | Time = 3.7636 ms
+-----------------------------------------
+-----------------------------------------
+| Loading reference lengths | Time = 1.5067 ms
+-----------------------------------------
+-----------------------------------------
+| Loading mphf table | Time = 56.819 ms
+-----------------------------------------
+size = 187519451
+Number of ones: 1473642
+Number of ones per inventory item: 512
+Inventory entries filled: 2879
+-----------------------------------------
+| Loading contig boundaries | Time = 360.6 ms
+-----------------------------------------
+size = 187519451
+-----------------------------------------
+| Loading sequence | Time = 29.755 ms
+-----------------------------------------
+size = 143310191
+-----------------------------------------
+| Loading positions | Time = 243 ms
+-----------------------------------------
+size = 383299373
+-----------------------------------------
+| Loading reference sequence | Time = 49.914 ms
+-----------------------------------------
+-----------------------------------------
+| Loading reference accumulative lengths | Time = 2.5039 ms
+-----------------------------------------
+[2021-03-20 08:40:06.610] [jointLog] [info] done
+[2021-03-20 08:40:06.610] [jointLog] [info] Index contained 233,652 targets
+[2021-03-20 08:40:06.673] [jointLog] [info] Number of decoys : 0
+
+
+[A[32mprocessed[31m 500,001 [32mfragments[0m
+hits: 40,484; hits per frag:  0.0811099[2021-03-20 08:40:07.372] [jointLog] [info] Automatically detected most likely library type as SF
+
+[A[32mprocessed[31m 1,000,001 [32mfragments[0m
+hits: 80,469; hits per frag:  0.0806949[A[32mprocessed[31m 1,500,000 [32mfragments[0m
+hits: 115,322; hits per frag:  0.0774353[A[32mprocessed[31m 2,000,000 [32mfragments[0m
+hits: 162,484; hits per frag:  0.0813774[A[32mprocessed[31m 2,500,000 [32mfragments[0m
+hits: 208,108; hits per frag:  0.0834976[A[32mprocessed[31m 3,000,000 [32mfragments[0m
+
+hits: 4,690,518; hits per frag:  0.0590164[A[32mprocessed[31m 80,000,000 [32mfragments[0m
+hits: 4,690,623; hits per frag:  0.0586451[A[32mprocessed[31m 80,500,000 [32mfragments[0m
+hits: 4,690,656; hits per frag:  0.0583178[A[32mprocessed[31m 81,000,000 [32mfragments[0m
+hits: 4,690,684; hits per frag:  0.0579286
+zero probability fragments
+zero probability fragments
+zero probability fragments
+zero probability fragments
+[2021-03-20 08:42:21.520] [jointLog] [info] Computed 27,035 rich equivalence classes for further processing
+[2021-03-20 08:42:21.520] [jointLog] [info] Counted 956,391 total reads in the equivalence classes
+of fragments were shorter than the k used to build the index.
+If this fraction is too large, consider re-building the index with a smaller k.
+The minimum read size found was 15.
+
+
+[2021-03-20 08:42:21.525] [jointLog] [info] Number of mappings discarded because of alignment score : 15,191,645
+[2021-03-20 08:42:21.525] [jointLog] [info] Number of fragments entirely discarded because of alignment score : 1,453,561
+[2021-03-20 08:42:21.525] [jointLog] [info] Number of fragments discarded because they are best-mapped to decoys : 0
+[2021-03-20 08:42:21.525] [jointLog] [info] Number of fragments discarded because they have only dovetail (discordant) mappings to valid targets : 0
+[2021-03-20 08:42:21.548] [jointLog] [warning] Only 956391 fragments were mapped, but the number of burn-in fragments was set to 5000000.
+The effective lengths have been computed using the observed mappings.
+[2021-03-20 08:42:21.548] [jointLog] [info] finished quantifyLibrary()
+[2021-03-20 08:42:21.552] [jointLog] [info] Starting optimizer
+[2021-03-20 08:42:25.537] [jointLog] [info] Marked 0 weighted equivalence classes as degenerate
+[2021-03-20 08:42:25.549] [jointLog] [info] iteration = 0 | max rel diff. = 400.397
+[2021-03-20 08:42:26.767] [jointLog] [info] iteration = 100 | max rel diff. = 1.16749
+[2021-03-20 08:42:27.981] [jointLog] [info] iteration = 200 | max rel diff. = 0.0352405
+[2021-03-20 08:42:29.187] [jointLog] [info] iteration = 300 | max rel diff. = 0.0114941
+[2021-03-20 08:42:30.413] [jointLog] [info] iteration = 400 | max rel diff. = 0.0127713
+[2021-03-20 08:42:31.634] [jointLog] [info] iteration = 500 | max rel diff. = 0.0190459
+[2021-03-20 08:42:32.613] [jointLog] [info] iteration = 581 | max rel diff. = 0.000131577
+[2021-03-20 08:42:32.642] [jointLog] [info] Finished optimizer
+[2021-03-20 08:42:32.642] [jointLog] [info] writing output
+:end:
+
+Check one of the output dirs
+
+#+begin_src bash
+    cd 1-16081_Nor_Cells_AGTCAAAT_L001_
+    command ls -lh
+    # check counts and quant
+    cat lib_format_counts.json
+    head quant.sf
+  # check mapping rate
+  grep -i 'mapping rate' logs/salmon_quant.log
+    # cd ..
+#+end_src
+
+#+RESULTS:
+:results:
+
+bash: cd: 1-16081_Nor_Cells_AGTCAAAT_L001_: No such file or directory
+total 11M
+drwxr-xr-x 2 mateus mateus 4.0K Mar 20 08:42 aux_info
+-rw-r--r-- 1 mateus mateus  338 Mar 20 08:42 cmd_info.json
+-rw-r--r-- 1 mateus mateus  616 Mar 20 08:42 lib_format_counts.json
+drwxr-xr-x 2 mateus mateus 4.0K Mar 20 08:42 libParams
+drwxr-xr-x 2 mateus mateus 4.0K Mar 20 08:40 logs
+-rw-r--r-- 1 mateus mateus  11M Mar 20 08:42 quant.sf
+(rna_seq) [mateus@dell-xps159570 1-16081_Nor_Cells_AGTCAAAT_L001_]$ {
+    "read_files": "[ 1-16081_Nor_Cells_AGTCAAAT_L001_R1_001_trimmed.fq.gz, 1-16081_Nor_Cells_AGTCAAAT_L001_R2_001_trimmed.fq.gz ]",
+    "expected_format": "SF",
+    "compatible_fragment_ratio": 1.0,
+    "num_compatible_fragments": 956391,
+    "num_assigned_fragments": 956391,
+    "num_frags_with_concordant_consistent_mappings": 953713,
+    "num_frags_with_inconsistent_or_orphan_mappings": 5039,
+    "strand_mapping_bias": 0.9947442091385468,
+    "MSF": 0,
+    "OSF": 0,
+    "ISF": 0,
+    "MSR": 0,
+    "OSR": 0,
+    "ISR": 0,
+    "SF": 953713,
+    "SR": 5039,
+    "MU": 0,
+    "OU": 0,
+    "IU": 0,
+    "U": 0
+Name	Length	EffectiveLength	TPM	NumReads
+ENST00000456328.2	1657	1407.000	0.000000	0.000
+ENST00000450305.2	632	382.000	0.000000	0.000
+ENST00000488147.1	1351	1101.000	0.000000	0.000
+ENST00000619216.1	68	2.848	0.000000	0.000
+ENST00000473358.1	712	462.000	0.000000	0.000
+ENST00000469289.1	535	285.000	0.000000	0.000
+ENST00000607096.1	138	4.663	0.000000	0.000
+ENST00000417324.1	1187	937.000	0.000000	0.000
+ENST00000461467.1	590	340.000	0.000000	0.000
+(rna_seq) [mateus@dell-xps159570 1-16081_Nor_Cells_AGTCAAAT_L001_]$ [2021-03-20 08:42:21.548] [jointLog] [info] Mapping rate = 1.1787%
+:end:
