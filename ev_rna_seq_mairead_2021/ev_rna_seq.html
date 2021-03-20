@@ -1,0 +1,575 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<!-- 2021-03-20 Sat 15:42 -->
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>EV RNA-seq</title>
+<meta name="author" content="mateus" />
+<meta name="generator" content="Org Mode" />
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  .title  { text-align: center;
+             margin-bottom: .2em; }
+  .subtitle { text-align: center;
+              font-size: medium;
+              font-weight: bold;
+              margin-top:0; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { font-family: monospace; color: green; }
+  .priority { font-family: monospace; color: orange; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .org-right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .org-left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .org-center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: auto;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline; margin-top: 14px;}
+  /* Languages per Org manual */
+  pre.src-asymptote:before { content: 'Asymptote'; }
+  pre.src-awk:before { content: 'Awk'; }
+  pre.src-C:before { content: 'C'; }
+  /* pre.src-C++ doesn't work in CSS */
+  pre.src-clojure:before { content: 'Clojure'; }
+  pre.src-css:before { content: 'CSS'; }
+  pre.src-D:before { content: 'D'; }
+  pre.src-ditaa:before { content: 'ditaa'; }
+  pre.src-dot:before { content: 'Graphviz'; }
+  pre.src-calc:before { content: 'Emacs Calc'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-fortran:before { content: 'Fortran'; }
+  pre.src-gnuplot:before { content: 'gnuplot'; }
+  pre.src-haskell:before { content: 'Haskell'; }
+  pre.src-hledger:before { content: 'hledger'; }
+  pre.src-java:before { content: 'Java'; }
+  pre.src-js:before { content: 'Javascript'; }
+  pre.src-latex:before { content: 'LaTeX'; }
+  pre.src-ledger:before { content: 'Ledger'; }
+  pre.src-lisp:before { content: 'Lisp'; }
+  pre.src-lilypond:before { content: 'Lilypond'; }
+  pre.src-lua:before { content: 'Lua'; }
+  pre.src-matlab:before { content: 'MATLAB'; }
+  pre.src-mscgen:before { content: 'Mscgen'; }
+  pre.src-ocaml:before { content: 'Objective Caml'; }
+  pre.src-octave:before { content: 'Octave'; }
+  pre.src-org:before { content: 'Org mode'; }
+  pre.src-oz:before { content: 'OZ'; }
+  pre.src-plantuml:before { content: 'Plantuml'; }
+  pre.src-processing:before { content: 'Processing.js'; }
+  pre.src-python:before { content: 'Python'; }
+  pre.src-R:before { content: 'R'; }
+  pre.src-ruby:before { content: 'Ruby'; }
+  pre.src-sass:before { content: 'Sass'; }
+  pre.src-scheme:before { content: 'Scheme'; }
+  pre.src-screen:before { content: 'Gnu Screen'; }
+  pre.src-sed:before { content: 'Sed'; }
+  pre.src-sh:before { content: 'shell'; }
+  pre.src-sql:before { content: 'SQL'; }
+  pre.src-sqlite:before { content: 'SQLite'; }
+  /* additional languages in org.el's org-babel-load-languages alist */
+  pre.src-forth:before { content: 'Forth'; }
+  pre.src-io:before { content: 'IO'; }
+  pre.src-J:before { content: 'J'; }
+  pre.src-makefile:before { content: 'Makefile'; }
+  pre.src-maxima:before { content: 'Maxima'; }
+  pre.src-perl:before { content: 'Perl'; }
+  pre.src-picolisp:before { content: 'Pico Lisp'; }
+  pre.src-scala:before { content: 'Scala'; }
+  pre.src-shell:before { content: 'Shell Script'; }
+  pre.src-ebnf2ps:before { content: 'ebfn2ps'; }
+  /* additional language identifiers per "defun org-babel-execute"
+       in ob-*.el */
+  pre.src-cpp:before  { content: 'C++'; }
+  pre.src-abc:before  { content: 'ABC'; }
+  pre.src-coq:before  { content: 'Coq'; }
+  pre.src-groovy:before  { content: 'Groovy'; }
+  /* additional language identifiers from org-babel-shell-names in
+     ob-shell.el: ob-shell is the only babel language using a lambda to put
+     the execution function name together. */
+  pre.src-bash:before  { content: 'bash'; }
+  pre.src-csh:before  { content: 'csh'; }
+  pre.src-ash:before  { content: 'ash'; }
+  pre.src-dash:before  { content: 'dash'; }
+  pre.src-ksh:before  { content: 'ksh'; }
+  pre.src-mksh:before  { content: 'mksh'; }
+  pre.src-posh:before  { content: 'posh'; }
+  /* Additional Emacs modes also supported by the LaTeX listings package */
+  pre.src-ada:before { content: 'Ada'; }
+  pre.src-asm:before { content: 'Assembler'; }
+  pre.src-caml:before { content: 'Caml'; }
+  pre.src-delphi:before { content: 'Delphi'; }
+  pre.src-html:before { content: 'HTML'; }
+  pre.src-idl:before { content: 'IDL'; }
+  pre.src-mercury:before { content: 'Mercury'; }
+  pre.src-metapost:before { content: 'MetaPost'; }
+  pre.src-modula-2:before { content: 'Modula-2'; }
+  pre.src-pascal:before { content: 'Pascal'; }
+  pre.src-ps:before { content: 'PostScript'; }
+  pre.src-prolog:before { content: 'Prolog'; }
+  pre.src-simula:before { content: 'Simula'; }
+  pre.src-tcl:before { content: 'tcl'; }
+  pre.src-tex:before { content: 'TeX'; }
+  pre.src-plain-tex:before { content: 'Plain TeX'; }
+  pre.src-verilog:before { content: 'Verilog'; }
+  pre.src-vhdl:before { content: 'VHDL'; }
+  pre.src-xml:before { content: 'XML'; }
+  pre.src-nxml:before { content: 'XML'; }
+  /* add a generic configuration mode; LaTeX export needs an additional
+     (add-to-list 'org-latex-listings-langs '(conf " ")) in .emacs */
+  pre.src-conf:before { content: 'Configuration File'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.org-right  { text-align: center;  }
+  th.org-left   { text-align: center;   }
+  th.org-center { text-align: center; }
+  td.org-right  { text-align: right;  }
+  td.org-left   { text-align: left;   }
+  td.org-center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara { display: inline; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .equation-container {
+    display: table;
+    text-align: center;
+    width: 100%;
+  }
+  .equation {
+    vertical-align: middle;
+  }
+  .equation-label {
+    display: table-cell;
+    text-align: right;
+    vertical-align: middle;
+  }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  .org-svg { width: 90%; }
+  /*]]>*/-->
+</style>
+<script type="text/javascript">
+// @license magnet:?xt=urn:btih:e95b018ef3580986a04669f1b5879592219e2a7a&dn=public-domain.txt Public Domain
+<!--/*--><![CDATA[/*><!--*/
+     function CodeHighlightOn(elem, id)
+     {
+       var target = document.getElementById(id);
+       if(null != target) {
+         elem.classList.add("code-highlighted");
+         target.classList.add("code-highlighted");
+       }
+     }
+     function CodeHighlightOff(elem, id)
+     {
+       var target = document.getElementById(id);
+       if(null != target) {
+         elem.classList.remove("code-highlighted");
+         target.classList.remove("code-highlighted");
+       }
+     }
+    /*]]>*///-->
+// @license-end
+</script>
+</head>
+<body>
+<div id="content">
+<h1 class="title">EV RNA-seq</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org49d2ab5">1. Experimental details</a></li>
+<li><a href="#orgf99bede">2. Software setup</a></li>
+<li><a href="#org4521b6b">3. Raw data process</a>
+<ul>
+<li><a href="#orgba63d9b">3.1. FastQC</a></li>
+<li><a href="#org0561277">3.2. Trimming</a></li>
+<li><a href="#orgad0fe9e">3.3. Alignment</a></li>
+<li><a href="#org4e7e37c">3.4. Prep for downstream analysis</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-org49d2ab5" class="outline-2">
+<h2 id="org49d2ab5"><span class="section-number-2">1</span> Experimental details</h2>
+<div class="outline-text-2" id="text-1">
+<ul class="org-ul">
+<li><p>
+look for differentially expressed miRNAs in the different EV populations.
+</p>
+
+<p>
+We have 4 groups each with 4 doners and 1 FBS control.
+</p></li>
+</ul>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-right" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">Condition</th>
+<th scope="col" class="org-right">number of samples</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">Normoxic Cells (Nor<sub>Cell</sub>)</td>
+<td class="org-right">4</td>
+</tr>
+
+<tr>
+<td class="org-left">Normoxic EVs (Nor<sub>EV</sub>)</td>
+<td class="org-right">4</td>
+</tr>
+
+<tr>
+<td class="org-left">Hypoxic EVs (Hyp<sub>EV</sub>)</td>
+<td class="org-right">4</td>
+</tr>
+
+<tr>
+<td class="org-left">Normoxic/Primed EVs (N<sub>P</sub><sub>EV</sub>)</td>
+<td class="org-right">4</td>
+</tr>
+
+<tr>
+<td class="org-left">FBS control (FBS<sub>EV</sub>)</td>
+<td class="org-right">1</td>
+</tr>
+</tbody>
+</table>
+
+<ul class="org-ul">
+<li>Instrument used: <a href="https://www.illumina.com/systems/sequencing-platforms/novaseq.html">Illumina seqencer: NovaSeq</a> (should check model if correct)</li>
+</ul>
+
+<div class="org-src-container">
+<pre class="src src-bash">
+<span style="color: #3679D8;">pwd</span>
+<span style="color: #3679D8;">echo</span> $<span style="color: #86e7d7;">PATH</span>
+<span style="color: #767676; font-style: italic;"># </span><span style="color: #767676; font-style: italic;">set number of cores to one less than the total</span>
+<span style="color: #86e7d7;">CORES</span>=$<span style="color: #3679D8;">(</span><span style="color: #8041D8;">(</span>$<span style="color: #79D836;">(</span>nproc<span style="color: #79D836;">)</span> - 1<span style="color: #8041D8;">)</span><span style="color: #3679D8;">)</span>
+<span style="color: #3679D8;">echo</span> $<span style="color: #3679D8;">{</span><span style="color: #86e7d7;">CORES</span><span style="color: #3679D8;">}</span>
+
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgf99bede" class="outline-2">
+<h2 id="orgf99bede"><span class="section-number-2">2</span> Software setup</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+Here we'll use <a href="https://docs.conda.io/en/latest/miniconda.html">miniconda</a> to manage our software
+</p>
+
+<div class="org-src-container">
+<pre class="src src-bash">
+<span style="color: #767676; font-style: italic;"># </span><span style="color: #767676; font-style: italic;">First we set up an environment for the project</span>
+conda create -n rna_seq
+<span style="color: #767676; font-style: italic;"># </span><span style="color: #767676; font-style: italic;">Then we can install the software we need</span>
+conda install <span style="color: #86e7d7;">python</span>=3.8
+conda install -c bioconda fastqc
+conda install -c bioconda multiqc
+conda install -c bioconda cutadapt
+conda install -c bioconda trim-galore
+conda install <span style="color: #86e7d7;">salmon</span>=1.4.0
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-bash">
+<span style="color: #767676; font-style: italic;"># </span><span style="color: #767676; font-style: italic;">Then we activate the environment</span>
+conda activate rna_seq
+<span style="color: #767676; font-style: italic;"># </span><span style="color: #767676; font-style: italic;">Then set up our channels - the last channel added is the highest priority</span>
+conda config --add channels defaults
+conda config --add channels bioconda
+conda config --add channels conda-forge
+</pre>
+</div>
+
+<p>
+Now let's check our conda status
+</p>
+
+<div class="org-src-container">
+<pre class="src src-bash">
+<span style="color: #767676; font-style: italic;"># </span><span style="color: #767676; font-style: italic;">check conda info</span>
+conda info
+<span style="color: #767676; font-style: italic;"># </span><span style="color: #767676; font-style: italic;">list packages</span>
+conda list
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org4521b6b" class="outline-2">
+<h2 id="org4521b6b"><span class="section-number-2">3</span> Raw data process</h2>
+<div class="outline-text-2" id="text-3">
+</div>
+<div id="outline-container-orgba63d9b" class="outline-3">
+<h3 id="orgba63d9b"><span class="section-number-3">3.1</span> FastQC</h3>
+<div class="outline-text-3" id="text-3-1">
+<p>
+First, we should check the quality of the reads.
+Here we're using <a href="https://www.bioinformatics.babraham.ac.uk/projects/fastqc/">fastqc</a>.
+</p>
+
+<p>
+Move all the files into the same directory
+</p>
+
+<div class="org-src-container">
+<pre class="src src-bash">
+  <span style="color: #767676; font-style: italic;"># </span><span style="color: #767676; font-style: italic;">cd Raw</span>
+ls -l -h
+  <span style="color: #D83441;">for</span> dir<span style="color: #D83441;"> in</span> ./Raw/*/
+  <span style="color: #D83441;">do</span>
+      <span style="color: #3679D8;">echo</span> $<span style="color: #86e7d7;">dir</span>
+      mv $<span style="color: #3679D8;">{</span><span style="color: #86e7d7;">dir</span><span style="color: #3679D8;">}</span>*.gz ~/RNA_seq_mairead_2021-03-16/Raw
+  <span style="color: #D83441;">done</span>
+
+ls -l -h
+</pre>
+</div>
+
+<p>
+Run fastqc
+</p>
+
+<div class="org-src-container">
+<pre class="src src-bash">
+<span style="color: #767676; font-style: italic;"># </span><span style="color: #767676; font-style: italic;">generate fastqc reports</span>
+fastqc -o Raw/fastqc_reports Raw/*fastq.gz
+</pre>
+</div>
+
+<p>
+As this generates a report for every file and manually looking through them all would be silly, we can use <a href="https://multiqc.info/docs/#running-multiqc">Multiqc</a> to aggregate the report together.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-bash">
+<span style="color: #767676; font-style: italic;"># </span><span style="color: #767676; font-style: italic;">aggregate reports</span>
+multiqc -o Raw/fastqc_reports Raw/fastqc_reports
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org0561277" class="outline-3">
+<h3 id="org0561277"><span class="section-number-3">3.2</span> Trimming</h3>
+<div class="outline-text-3" id="text-3-2">
+<p>
+Now we trim the reads using <a href="https://www.bioinformatics.babraham.ac.uk/projects/trim_galore/"><code>trim galore</code></a> which is a wrapper for <a href="https://cutadapt.readthedocs.io/en/stable/">Cutadapt</a>
+The University of Liverpool already trimmed the data, but we'll replicate this here to demonstrate.
+They used cutadapt with <code>-O 3</code> and then <a href="https://github.com/najoshi/sickle/releases/tag/v1.2">Sickle</a> to get a minimum pred score of 20, and remove reads less than 15 bp. in length.
+Trim galore can autodetect adapter sequences, but we specify them here, again to match Liverpool.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-bash">
+<span style="color: #767676; font-style: italic;"># </span><span style="color: #767676; font-style: italic;">trim reads - set overlap to 3 and length to 15 to match Liverpool settings</span>
+trim_galore -a <span style="color: #79D836;">" AGATCGGAAGAGCACACGTCT -a GATCGGAAGAGCACACGTCTGAACTCCAGTCAC -a AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC -a GATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT -a CTGTCTCTTATACACATCTCCGAGCCCACGAGAC -a CTGTCTCTTATACACATCTAGATGTGTATAAGAGACAG -a CGTAATAACTTCGTATAGCATACATTATACGAAGTTATACGA -a TCGTATAACTTCGTATAATGTATGCTATACGAAGTTATTACG"</span> --stringency 3 --cores 8 --length 15 -o trimmed_manual Raw/*.fastq.gz
+</pre>
+</div>
+
+<p>
+Trim Galore gives us these nice trimming reports, lests tidy them into their own directory.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-bash">
+<span style="color: #767676; font-style: italic;"># </span><span style="color: #767676; font-style: italic;">make directory for trimming reports</span>
+mkdir trimmed_manual/trimming_reports
+<span style="color: #767676; font-style: italic;"># </span><span style="color: #767676; font-style: italic;">move reports</span>
+mv trimmed_manual/*.txt trimmed_manual/trimming_reports
+</pre>
+</div>
+
+<p>
+Now we check the quality of our trimmed files so we can compare to the raw data reports.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-bash">
+<span style="color: #767676; font-style: italic;"># </span><span style="color: #767676; font-style: italic;">generate fastqc reports on trimmed data</span>
+fastqc -o trimmed_manual/fastqc_reports trimmed_manual/*.fq.gz
+<span style="color: #767676; font-style: italic;"># </span><span style="color: #767676; font-style: italic;">use multiqc</span>
+multiqc -o trimmed_manual/fastqc_reports trimmed_manual/fastqc_reports
+</pre>
+</div>
+
+<p>
+The multiqc report for the raw data can be found <a href="multiqc_reports/multiqc_report_raw.html">here</a>, and the trimmed data <a href="multiqc_reports/multiqc_report_trimmed.html">here</a>.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgad0fe9e" class="outline-3">
+<h3 id="orgad0fe9e"><span class="section-number-3">3.3</span> Alignment</h3>
+<div class="outline-text-3" id="text-3-3">
+<p>
+Now let's use <a href="https://salmon.readthedocs.io/en/latest/">salmon</a> for aligmnent.
+We'll use transcripts rather than the genome as this is is RNA sequencing data.
+We use human transcripts from <a href="https://www.gencodegenes.org/">gencode</a>
+</p>
+
+<p>
+This data is microRNA, so maybe a different source could be better for use in alignment?
+Perhaps from <a href="http://rfam.xfam.org/">Rfam</a> or <a href="http://www.mirbase.org/">miRBase</a>?
+</p>
+
+<p>
+First we index our file of human transcripts from gencode.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-bash">
+<span style="color: #767676; font-style: italic;"># </span><span style="color: #767676; font-style: italic;">set up salmon index - using gencode v37 transcripts</span>
+<span style="color: #3679D8;">cd</span> reference_genes
+salmon index -t gencode_human.v37.transcripts.fa -i gencode_v37_index --gencode
+<span style="color: #3679D8;">cd</span> ..
+</pre>
+</div>
+
+<p>
+To do the aligmnent salmon need all the files from a sample on one line.
+We have two reads, and therefore two files, for each sample.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-bash">
+<span style="color: #767676; font-style: italic;"># </span><span style="color: #767676; font-style: italic;">make .txt with the sample strings</span>
+<span style="color: #3679D8;">cd</span> trimmed_manual
+command ls *.fq.gz | <span style="color: #D83441;">while </span><span style="color: #3679D8;">read</span> file;<span style="color: #D83441;">do </span><span style="color: #3679D8;">echo</span> $<span style="color: #86e7d7;">file</span> | cut -dR -f1 &gt;&gt; samples.txt; <span style="color: #D83441;">done</span>
+</pre>
+</div>
+
+<p>
+Then we quantify our reads.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-bash">
+<span style="color: #767676; font-style: italic;"># </span><span style="color: #767676; font-style: italic;">get a list of unique sample file strings</span>
+<span style="color: #86e7d7;">SAMPLE</span>=$<span style="color: #3679D8;">(</span>cat samples.txt | sort | uniq<span style="color: #3679D8;">)</span>
+<span style="color: #3679D8;">echo</span> $<span style="color: #86e7d7;">SAMPLE</span>
+<span style="color: #767676; font-style: italic;"># </span><span style="color: #767676; font-style: italic;">loop over sample files with salmon</span>
+<span style="color: #D83441;">for</span> i<span style="color: #D83441;"> in</span> $<span style="color: #3679D8;">{</span><span style="color: #86e7d7;">SAMPLE</span><span style="color: #3679D8;">}</span>
+<span style="color: #D83441;">do</span>
+    salmon quant -i ../reference_genes/gencode_v37_index -l A -o $<span style="color: #3679D8;">{</span><span style="color: #86e7d7;">i</span><span style="color: #3679D8;">}</span> -r $<span style="color: #3679D8;">{</span><span style="color: #86e7d7;">i</span><span style="color: #3679D8;">}</span>*
+<span style="color: #D83441;">done</span>
+
+<span style="color: #767676; font-style: italic;"># </span><span style="color: #767676; font-style: italic;">check that we have 17 directories as we expect</span>
+ls -d *L001_ | wc -l
+</pre>
+</div>
+
+<p>
+Check one of the output dirs
+</p>
+
+<div class="org-src-container">
+<pre class="src src-bash">
+  <span style="color: #3679D8;">cd</span> 1-16081_Nor_Cells_AGTCAAAT_L001_
+  command ls -lh
+  <span style="color: #767676; font-style: italic;"># </span><span style="color: #767676; font-style: italic;">check counts and quant</span>
+  cat lib_format_counts.json
+  head quant.sf
+<span style="color: #767676; font-style: italic;"># </span><span style="color: #767676; font-style: italic;">check mapping rate</span>
+grep -i <span style="color: #79D836;">'mapping rate'</span> logs/salmon_quant.log
+  <span style="color: #3679D8;">cd</span> ..
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org4e7e37c" class="outline-3">
+<h3 id="org4e7e37c"><span class="section-number-3">3.4</span> Prep for downstream analysis</h3>
+<div class="outline-text-3" id="text-3-4">
+<p>
+We'll be using R for more downstream analysis, and we can do some prep to make life easier.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-bash">
+<span style="color: #767676; font-style: italic;"># </span><span style="color: #767676; font-style: italic;">get ensamble gene and transcript ids</span>
+grep -P -o <span style="color: #79D836;">'ENST\d{11}'</span> ../reference_genes/gencode_human.v37.transcripts.fa &gt; enst.txt
+grep -P -o <span style="color: #79D836;">'ENSG\d{11}'</span> ../reference_genes/gencode_human.v37.transcripts.fa &gt; ensg.txt
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-bash">
+<span style="color: #767676; font-style: italic;"># </span><span style="color: #767676; font-style: italic;">check</span>
+head enst.txt
+paste -d <span style="color: #79D836;">','</span> enst.txt ensg.txt | head
+<span style="color: #767676; font-style: italic;"># </span><span style="color: #767676; font-style: italic;">past gene and transcipt ids</span>
+paste -d <span style="color: #79D836;">','</span> enst.txt ensg.txt &gt; ../../git_work/RNA-seq/ev_rna_seq_mairead_2021/gene_map.csv
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="author">Author: mateus</p>
+<p class="date">Created: 2021-03-20 Sat 15:42</p>
+<p class="validation"><a href="https://validator.w3.org/check?uri=referer">Validate</a></p>
+</div>
+</body>
+</html>
