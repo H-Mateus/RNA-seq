@@ -1,0 +1,194 @@
+---
+title: "Downstream analysis"
+date: "`r Sys.time()`"
+author: "Gabriel Mateus Bernardo Harrington"
+output:
+  html_document:
+    highlight: tango
+    number_sections: yes
+    theme: united
+    toc: yes
+    toc_float:
+      collapsed: yes
+    code_download: true
+    df_print: paged
+bibliography: /home/mateus/Documents/masterLib.bib
+csl: /home/mateus/Documents/citation_styles/elsevier-vancouver.csl
+link-citations: true
+---
+
+```{r, label='setup-options', include=FALSE}
+knitr::opts_chunk$set(
+  eval = TRUE, # eval code chunks
+  echo = TRUE, # include source code
+  #fig.width = 6, # set figure dims
+  #fig.height = 6
+  warning = FALSE, # exclude warnings
+  message = FALSE, # exclude messages
+  error = FALSE # exclude errors
+)
+```
+
+# Load packages
+
+```{r, label='load-packages'}
+library(dplyr)
+library(readr)
+library(magrittr)
+library(ggplot2)
+## Bioconductor packages
+library(BiocManager)
+## BiocManager::install("tximport")
+library(tximport)
+library(DESeq2)
+```
+
+# Read in data
+
+```{r, label='read-in-data'}
+## read in sample tabe
+sample_table <- read_csv("sample_table.csv")
+sample_table
+## make vector of paths to salmon outputs
+salmon_dirs = "../../../RNA_seq_mairead_2021-03-16/trimmed_manual/"
+salmon_files <- paste0(salmon_dirs, pull(sample_table, dir_names), "/quant.sf")
+names(salmon_files) <- pull(sample_table, sample_name)
+head(salmon_files, 3)
+
+## read in gene maps
+gene_map <- read_csv("gene_map.csv", col_names = c("enstid", "ensgid"))
+gene_map
+## read in salmon outputs
+count_data <- tximport(files = salmon_files, type = "salmon",
+         tx2gene = gene_map,
+         ignoreTxVersion = TRUE) #ignore "." after gene id
+
+## check output
+str(count_data)
+dim(count_data[['counts']])
+```
+
+```{r, label='desq-init'}
+# prep sample data for deseq
+sample_table <- as.data.frame(sample_table)
+sample_table$treatment <- as.factor(sample_table$treatment)
+# get tximport output to deseq
+deseq_data_in <- DESeqDataSetFromTximport(txi = count_data,
+                                       colData = sample_table,
+                                       design = ~ treatment)
+
+## check counts
+counts(deseq_data_in)[1:6, 1:3]
+count_data$counts[1:6, 1:3]
+```
+
+# Normalisation
+
+Reads map to a gene in proportion to:
+
+- Gene length
+- Gene expression
+- Library depth
+
+We are only interested in differential gene expression, so we're not interested if one gene has twice as many counts as another simply because it's twice as long.
+But we are also comparing the same genes in different conditions, so gene length doesn't matter to us.
+
+Library depth effect does matter though.
+If you sequence 10 million reads for one library and 20 million reads for another library, the second will have twice as many counts for every gene regardless of any expression effects.
+
+We therefore need to normalise this effect away, so that any difference in counts are due to gene expression alone.
+
+DESeq2 has a method this by "*Trimmed median of means (TMM)*".
+
+TMM steps are as follows:
+
+- per row geometric mean of counts
+- per row ratio of counts to geometric mean
+- median of these ratios for a sample (column) = 'scaling factor'
+- Raw counts/scaling factor = normalised counts
+
+```{r, label='deseq-normalisation'}
+# apply TMM
+deseq_data <- estimateSizeFactors(deseq_data_in)
+## check normalized factors and counts
+head(normalizationFactors(deseq_data))[, 1:3]
+counts(deseq_data, normalized = TRUE)[1:6, 1:3]
+## check boxplot
+boxplot(counts(deseq_data, normalized = TRUE))
+```
+
+# PCA
+
+Principle component analysis (PCA) is a parametric method, and our data isn't normally distributed, but we can make it normal with a log transformation.
+
+We can't log transform 0 so we'll need to deal with that.
+
+We also don't want to just directly log transform all our data as RNA seq data is [heteroscedastic](https://en.wikipedia.org/wiki/Heteroscedasticity), meaning its variance are not stable across the data.
+So small counts are highly variable, but high counts are much more stable.
+
+```{r, label='pca-prep'}
+## apply log transformation
+vst = varianceStabilizingTransformation(deseq_data)
+## plot transformed data
+boxplot(assay(vst))
+
+## plot pca - not that this only used the first 500 genes
+plotPCA(vst, intgroup = 'treatment') +
+    theme_bw()
+```
+
+It looks like normoxia cells are rather different from the EVs.
+
+```{r, label='alternate-clustering'}
+## try some other kinds of clustering
+
+## Hierarchical clustering - unsupervised clustering
+## first we need distance measures
+d = dist(t(assay(vst)))
+## then get clustering
+h = hclust(d)
+## plot
+plot(h)
+
+## K-means clustering - supervised clustering
+k = kmeans(t(assay(vst)), centers = 2)
+k$cluster
+```
+
+# Dispersions
+
+Dispersion is a measure of variance.
+
+This is the sum of two components, the biological variance, the naturally occurring stochastic variance which we can estimate from our data, and the shot noise, which is the systematic experimental variation.
+
+For low gene expression the shot noise, or technical variation, is what dominates, whereas biological variation is more relevant at higher counts.
+
+We need to estimate the variance as we would need an impractical number of measurements to calculate it more exactly.
+
+DESeq2 can compare the variance of all measurements of all genes, as opposed to all measurements of one gene which we can do because the gene counts are not completely independent of one another, to shrink the estimate of variance for current gene.
+This is called [empirical bayesian shrinkage](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2872278/).
+
+
+In the dispersion plots the black points are the raw estimates of dispersion for each gene.
+The red points are the relationship between the mean counts with the mean dispersion.
+The black points are then shrunk to the red line which is denoted by the blue points.
+
+```{r, label='dispersions'}
+dds <- estimateDispersions(deseq_data)
+plotDispEsts(dds)
+```
+
+```{r, label='apply-stats'}
+dds <- nbinomWaldTest(dds)
+## note that DESeq2 has a function apply the above three methods as a shortcut like so
+dds2 <- DESeq(deseq_data_in)
+
+## get results
+result_table = results(dds)
+result_table2 = results(dds2)
+summary(result_table)
+summary(result_table2)
+## note that summary output is the same
+
+head(result_table)
+```
