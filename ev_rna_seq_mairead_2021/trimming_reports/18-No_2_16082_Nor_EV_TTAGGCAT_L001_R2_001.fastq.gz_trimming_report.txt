@@ -1,0 +1,206 @@
+
+SUMMARISING RUN PARAMETERS
+==========================
+Input filename: Raw/18-No_2_16082_Nor_EV_TTAGGCAT_L001_R2_001.fastq.gz
+Trimming mode: single-end
+Trim Galore version: 0.6.6
+Cutadapt version: 3.3
+Python version: could not detect
+Number of cores used for trimming: 8
+Quality Phred score cutoff: 20
+Quality encoding type selected: ASCII+33
+Adapter sequence: ' AGATCGGAAGAGCACACGTCT -a GATCGGAAGAGCACACGTCTGAACTCCAGTCAC -a AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC -a GATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT -a CTGTCTCTTATACACATCTCCGAGCCCACGAGAC -a CTGTCTCTTATACACATCTAGATGTGTATAAGAGACAG -a CGTAATAACTTCGTATAGCATACATTATACGAAGTTATACGA -a TCGTATAACTTCGTATAATGTATGCTATACGAAGTTATTACG' (user defined)
+Maximum trimming error rate: 0.1 (default)
+Minimum required adapter overlap (stringency): 3 bp
+Minimum required sequence length before a sequence gets removed: 15 bp
+Output file will be GZIP compressed
+
+
+This is cutadapt 3.3 with Python 3.8.8
+Command line parameters: -j 8 -e 0.1 -q 20 -O 3 -a AGATCGGAAGAGCACACGTCT -a GATCGGAAGAGCACACGTCTGAACTCCAGTCAC -a AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC -a GATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT -a CTGTCTCTTATACACATCTCCGAGCCCACGAGAC -a CTGTCTCTTATACACATCTAGATGTGTATAAGAGACAG -a CGTAATAACTTCGTATAGCATACATTATACGAAGTTATACGA -a TCGTATAACTTCGTATAATGTATGCTATACGAAGTTATTACG Raw/18-No_2_16082_Nor_EV_TTAGGCAT_L001_R2_001.fastq.gz
+Processing reads on 8 cores in single-end mode ...
+Finished in 280.51 s (12 µs/read; 5.11 M reads/minute).
+
+=== Summary ===
+
+Total reads processed:              23,878,990
+Reads with adapters:                   399,810 (1.7%)
+Reads written (passing filters):    23,878,990 (100.0%)
+
+Total basepairs processed: 3,605,727,490 bp
+Quality-trimmed:             107,540,658 bp (3.0%)
+Total written (filtered):  3,496,906,310 bp (97.0%)
+
+=== Adapter 1 ===
+
+Sequence: AGATCGGAAGAGCACACGTCT; Type: regular 3'; Length: 21; Trimmed: 210139 times
+
+No. of allowed errors:
+1-9 bp: 0; 10-19 bp: 1; 20-21 bp: 2
+
+Bases preceding removed adapters:
+  A: 36.7%
+  C: 25.3%
+  G: 32.8%
+  T: 5.1%
+  none/other: 0.0%
+
+Overview of removed sequences
+length	count	expect	max.err	error counts
+3	189556	373109.2	0	189556
+4	19606	93277.3	0	19606
+5	652	23319.3	0	652
+6	198	5829.8	0	198
+7	24	1457.5	0	24
+8	3	364.4	0	3
+9	19	91.1	0	0 19
+10	57	22.8	1	0 57
+11	22	5.7	1	0 22
+12	1	1.4	1	0 1
+13	1	0.4	1	0 1
+
+
+=== Adapter 2 ===
+
+Sequence: GATCGGAAGAGCACACGTCTGAACTCCAGTCAC; Type: regular 3'; Length: 33; Trimmed: 22926 times
+
+No. of allowed errors:
+1-9 bp: 0; 10-19 bp: 1; 20-29 bp: 2; 30-33 bp: 3
+
+Bases preceding removed adapters:
+  A: 0.0%
+  C: 57.0%
+  G: 17.1%
+  T: 25.8%
+  none/other: 0.1%
+
+Overview of removed sequences
+length	count	expect	max.err	error counts
+3	20866	373109.2	0	20866
+4	1459	93277.3	0	1459
+5	432	23319.3	0	432
+6	97	5829.8	0	97
+7	5	1457.5	0	5
+8	2	364.4	0	2
+9	55	91.1	0	0 55
+10	9	22.8	1	0 9
+11	1	5.7	1	0 1
+
+
+=== Adapter 3 ===
+
+Sequence: AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC; Type: regular 3'; Length: 34; Trimmed: 0 times
+
+=== Adapter 4 ===
+
+Sequence: GATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT; Type: regular 3'; Length: 32; Trimmed: 8 times
+
+No. of allowed errors:
+1-9 bp: 0; 10-19 bp: 1; 20-29 bp: 2; 30-32 bp: 3
+
+Bases preceding removed adapters:
+  A: 50.0%
+  C: 25.0%
+  G: 0.0%
+  T: 25.0%
+  none/other: 0.0%
+
+Overview of removed sequences
+length	count	expect	max.err	error counts
+12	2	1.4	1	0 2
+13	2	0.4	1	0 2
+45	1	0.0	3	0 0 1
+48	1	0.0	3	0 0 0 1
+95	1	0.0	3	1
+96	1	0.0	3	0 1
+
+
+=== Adapter 5 ===
+
+Sequence: CTGTCTCTTATACACATCTCCGAGCCCACGAGAC; Type: regular 3'; Length: 34; Trimmed: 57032 times
+
+No. of allowed errors:
+1-9 bp: 0; 10-19 bp: 1; 20-29 bp: 2; 30-34 bp: 3
+
+Bases preceding removed adapters:
+  A: 37.0%
+  C: 29.5%
+  G: 25.7%
+  T: 7.8%
+  none/other: 0.0%
+
+Overview of removed sequences
+length	count	expect	max.err	error counts
+3	21588	373109.2	0	21588
+4	34907	93277.3	0	34907
+5	438	23319.3	0	438
+6	42	5829.8	0	42
+7	6	1457.5	0	6
+9	39	91.1	0	0 39
+10	11	22.8	1	0 11
+11	1	5.7	1	0 1
+
+
+=== Adapter 6 ===
+
+Sequence: CTGTCTCTTATACACATCTAGATGTGTATAAGAGACAG; Type: regular 3'; Length: 38; Trimmed: 0 times
+
+=== Adapter 7 ===
+
+Sequence: CGTAATAACTTCGTATAGCATACATTATACGAAGTTATACGA; Type: regular 3'; Length: 42; Trimmed: 83166 times
+
+No. of allowed errors:
+1-9 bp: 0; 10-19 bp: 1; 20-29 bp: 2; 30-39 bp: 3; 40-42 bp: 4
+
+Bases preceding removed adapters:
+  A: 53.0%
+  C: 22.7%
+  G: 24.1%
+  T: 0.2%
+  none/other: 0.0%
+
+Overview of removed sequences
+length	count	expect	max.err	error counts
+3	74674	373109.2	0	74674
+4	5942	93277.3	0	5942
+5	1915	23319.3	0	1915
+6	306	5829.8	0	306
+7	93	1457.5	0	93
+8	39	364.4	0	39
+9	10	91.1	0	2 8
+10	151	22.8	1	1 150
+11	36	5.7	1	0 36
+
+
+=== Adapter 8 ===
+
+Sequence: TCGTATAACTTCGTATAATGTATGCTATACGAAGTTATTACG; Type: regular 3'; Length: 42; Trimmed: 26539 times
+
+No. of allowed errors:
+1-9 bp: 0; 10-19 bp: 1; 20-29 bp: 2; 30-39 bp: 3; 40-42 bp: 4
+
+Bases preceding removed adapters:
+  A: 4.7%
+  C: 14.0%
+  G: 43.0%
+  T: 38.3%
+  none/other: 0.0%
+
+Overview of removed sequences
+length	count	expect	max.err	error counts
+3	20798	373109.2	0	20798
+4	5228	93277.3	0	5228
+5	343	23319.3	0	343
+6	129	5829.8	0	129
+7	26	1457.5	0	26
+8	3	364.4	0	3
+9	8	91.1	0	0 8
+10	1	22.8	1	0 1
+11	2	5.7	1	0 2
+12	1	1.4	1	0 1
+
+RUN STATISTICS FOR INPUT FILE: Raw/18-No_2_16082_Nor_EV_TTAGGCAT_L001_R2_001.fastq.gz
+=============================================
+23878990 sequences processed in total
+Sequences removed because they became shorter than the length cutoff of 15 bp:	48106 (0.2%)
+
